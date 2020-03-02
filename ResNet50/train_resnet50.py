@@ -18,6 +18,7 @@ import tensorflow as tf
 tf_version = tf.__version__.split('.')
 if int(tf_version[0]) != 2:
     raise RuntimeError('Tensorflow 2.x.x required')
+from tensorflow.keras.mixed_precision import experimental as mixed_precision
 
 import resnet50
 import imagereader
@@ -28,7 +29,10 @@ def train_model(output_folder, batch_size, reader_count, train_lmdb_filepath, te
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    # TODO add ability to reload a checkpoint or saved model to resume training
+    # setup mixed precision training to use FP16
+    policy = mixed_precision.Policy('mixed_float16')
+    mixed_precision.set_policy(policy)
+
     training_checkpoint_filepath = None
 
     # uses all available devices
@@ -65,14 +69,6 @@ def train_model(output_folder, batch_size, reader_count, train_lmdb_filepath, te
             model = resnet50.ResNet50(number_classes, global_batch_size, train_reader.get_image_size(), learning_rate)
 
             checkpoint = tf.train.Checkpoint(optimizer=model.get_optimizer(), model=model.get_keras_model())
-
-            # This requires pydot and graphviz, so its commented out to obviate those
-            # # print the model summary to file
-            # with open(os.path.join(output_folder, 'model.txt'), 'w') as summary_fh:
-            #     print_fn = lambda x: print(x, file=summary_fh)
-            #     model.get_keras_model().summary(print_fn=print_fn)
-            # tf.keras.utils.plot_model(model.get_keras_model(), os.path.join(output_folder, 'model.png'), show_shapes=True)
-            # tf.keras.utils.plot_model(model.get_keras_model(), os.path.join(output_folder, 'model.dot'), show_shapes=True)
 
             # train_epoch_size = train_reader.get_image_count()/batch_size
             train_epoch_size = test_every_n_steps
@@ -190,7 +186,7 @@ def train_model(output_folder, batch_size, reader_count, train_lmdb_filepath, te
         tf.saved_model.save(model.get_keras_model(), os.path.join(output_folder, 'saved_model'))
 
 
-def main():
+if __name__ == "__main__":
     # Setup the Argument parsing
     parser = argparse.ArgumentParser(prog='train_resnet50', description='Script which trains a ResNet50 Classification model')
 
@@ -207,8 +203,6 @@ def main():
 
     parser.add_argument('--early_stopping', dest='early_stopping_count', type=int, help='Perform early stopping when the test loss does not improve for N epochs.', default=10)
     parser.add_argument('--reader_count', dest='reader_count', type=int, help='how many threads to use for disk I/O and augmentation per gpu', default=1)
-
-    # TODO add parameter to specify the devices to use for training
 
     args = parser.parse_args()
     batch_size = args.batch_size
@@ -240,6 +234,3 @@ def main():
 
     train_model(output_folder, batch_size, reader_count, train_lmdb_filepath, test_lmdb_filepath, use_augmentation, number_classes, balance_classes, learning_rate, test_every_n_steps, early_stopping_count)
 
-
-if __name__ == "__main__":
-    main()
