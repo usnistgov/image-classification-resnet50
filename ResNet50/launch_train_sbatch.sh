@@ -46,7 +46,8 @@ scratch_dir="/scratch/${SLURM_JOB_ID}"
 term_handler()
 {
         echo "function term_handler called.  Cleaning up and Exiting"
-        # Do nothing
+        # cleanup scratch dir
+        rm -rf ${scratch_dir}/*
         exit -1
 }
 
@@ -80,4 +81,6 @@ echo "Launching Training Script"
 
 python train_resnet50.py --test_every_n_steps=${test_every_n_steps} --batch_size=${batch_size} --train_database="$scratch_dir/$train_lmdb_file" --test_database="$scratch_dir/$test_lmdb_file" --output_dir="$results_dir" --number_classes=${number_classes} --learning_rate=${learning_rate}  --use_augmentation=${use_augmentation} --balance_classes=${balance_classes}
 
+# cleanup scratch dir
+rm -rf ${scratch_dir}/*
 echo "Job completed"
