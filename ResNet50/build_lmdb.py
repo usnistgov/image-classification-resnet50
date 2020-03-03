@@ -74,7 +74,7 @@ def generate_database(img_list, database_name, image_filepath, csv_filepath, out
     with open(csv_filepath, 'r') as fh:
         reader = csv.reader(fh, delimiter=',')
         for row in reader:
-            ground_truth[row[0]] = float(row[1].strip())
+            ground_truth[row[0]] = int(row[1].strip())
 
     txn_nb = 0
     for i in range(len(img_list)):
