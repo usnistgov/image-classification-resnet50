@@ -26,5 +26,4 @@ image_format="tif"
 # END OF MODIFY THESE OPTIONS
 # ************************************
 
-
 python3 build_lmdb.py --image_folder=${image_folder} --csv_filepath=${csv_filepath} --output_folder=${output_folder} --dataset_name=${dataset_name} --train_fraction=${train_fraction} --image_format=${image_format}
