@@ -20,7 +20,7 @@ import random
 
 
 def read_image(fp):
-    img = skimage.io.imread(fp, as_gray=True)
+    img = skimage.io.imread(fp)
     return img
 
 
