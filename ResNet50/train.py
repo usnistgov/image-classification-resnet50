@@ -68,7 +68,7 @@ def train_model(output_folder, tensorboard_folder, batch_size, reader_count, tra
             test_dataset = mirrored_strategy.experimental_distribute_dataset(test_dataset)
 
             print('Creating model')
-            renset = model.ResNet50(number_classes, global_batch_size, train_reader.get_image_size(), learning_rate)
+            renset = model.ResNet50(train_reader.get_nb_classes(), global_batch_size, train_reader.get_image_size(), learning_rate)
 
             checkpoint = tf.train.Checkpoint(optimizer=renset.get_optimizer(), model=renset.get_keras_model())
 
@@ -184,7 +184,7 @@ def train_model(output_folder, tensorboard_folder, batch_size, reader_count, tra
     # convert training checkpoint to the saved model format
     if training_checkpoint_filepath is not None:
         # restore the checkpoint and generate a saved model
-        renset = model.ResNet50(number_classes, global_batch_size, train_reader.get_image_size(), learning_rate)
+        renset = model.ResNet50(train_reader.get_nb_classes(), global_batch_size, train_reader.get_image_size(), learning_rate)
         checkpoint = tf.train.Checkpoint(optimizer=renset.get_optimizer(), model=renset.get_keras_model())
         checkpoint.restore(training_checkpoint_filepath)
         tf.saved_model.save(renset.get_keras_model(), output_folder)

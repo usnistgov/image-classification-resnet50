@@ -1,13 +1,13 @@
 {
   "name": "WIPP Resnet50 Classification Plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "title": "Resnet50 Classification",
   "author": "Michael Majurski",
   "institution": "National Institute of Standards and Technology",
   "repository": "https://github.com/usnistgov/image-classification-resnet50",
   "citation": "\"Residual Learning for Image Recognition.\", Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian SunDeep, 10 Dec 2015. arXiv:1512.03385v1",
   "description": "Resnet50 Classification",
-  "containerId": "wipp/wipp-resnet50-classification-train-plugin:1.0.0",
+  "containerId": "wipp/wipp-resnet50-classification-train-plugin:1.0.1",
   "inputs": [
 
     {
@@ -34,28 +34,21 @@
     {
       "name": "batch_size",
       "type": "number",
-      "description": "How many images/tiles to use per mini-batch. The number of images used to estimate the gradient per training step.",
+      "description": "How many images/tiles to use per mini-batch. The number of images used to estimate the gradient per training step. [default: 4]",
       "required": true,
       "default": 4
     },
     {
-      "name": "number_classes",
-      "type": "number",
-      "description": "How many classes exists in the training data?",
-      "required": true,
-      "default": 2
-    },
-    {
       "name": "learning_rate",
       "type": "number",
-      "description": "What is the learning rate for the network?",
+      "description": "What is the learning rate for the network? [default: 3e-4]",
       "required": true,
       "default": 3e-4
     },
     {
       "name": "test_every_n_steps",
       "type": "number",
-      "description": "How many gradient update (training) steps to take between test split evaluations. This controls how big the effective epoch is. It enables controlling the test frequency between experiments with different true epoch sizes.",
+      "description": "How many gradient update (training) steps to take between test split evaluations. This controls how big the effective epoch is. It enables controlling the test frequency between experiments with different true epoch sizes. [default: 1000]",
       "required": true,
       "default": 1000
     },
@@ -81,14 +74,14 @@
        {
       "name": "early_stopping",
       "type": "number",
-      "description": "Perform early stopping when the test loss does not improve for N epochs.",
+      "description": "Perform early stopping when the test loss does not improve for N epochs. [default: 10]",
       "required": true,
       "default": 10
     },
        {
       "name": "reader_count",
       "type": "number",
-      "description": "how many threads to use for disk I/O and augmentation per gpu.",
+      "description": "how many threads to use for disk I/O and augmentation per gpu. [default: 1]",
       "required": true,
       "default": 1
     }    
@@ -120,11 +113,6 @@
       "key": "inputs.csv_name",
       "title": "CSV File: ",
       "description": "Write the file name."
-    },
-    {
-      "key": "inputs.number_classes",
-      "title": "Number of Classes: ",
-      "description": "How many classes exists in the training data?"
     },
     {
       "key": "inputs.learning_rate",
@@ -169,12 +157,6 @@
                     "image_folder",
                     "csv_filepath",
                     "csv_name"
-                  ]
-                },
-                {
-                  "title": "-- Data Configuration --",
-                  "fields": [
-                    "number_classes"
                   ]
                 },
                 {
