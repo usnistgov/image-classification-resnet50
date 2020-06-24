@@ -85,7 +85,7 @@ class ImageReader:
         self.balance_classes = balance_classes
         self.shuffle = shuffle
         self.nb_workers = num_workers
-        self.nb_classes = number_classes
+        # self.nb_classes = number_classes
 
         # init class state
         self.queue_starvation = False
@@ -130,15 +130,15 @@ class ImageReader:
             for key in cursor:
                 self.keys_flat.append(key)
 
-                if self.balance_classes:
-                    present_classes_str = key.decode('ascii').split(':')[1]
-                    present_classes_str = present_classes_str.split(',')
-                    for k in present_classes_str:
-                        k = int(k)
-                        while len(self.keys) <= k:
-                            self.keys.append(list())
-                        self.keys[k].append(key)
-
+                # if self.balance_classes:
+                present_classes_str = key.decode('ascii').split(':')[1]
+                present_classes_str = present_classes_str.split(',')
+                for k in present_classes_str:
+                    k = int(k)
+                    while len(self.keys) <= k:
+                        self.keys.append(list())
+                    self.keys[k].append(key)
+        self.nb_classes = len(self.keys)
         print('Dataset has {} examples'.format(len(self.keys_flat)))
         if self.balance_classes:
             print('Dataset Example Count by Class:')
@@ -148,6 +148,9 @@ class ImageReader:
     def get_image_count(self):
         # tie epoch size to the number of images
         return int(len(self.keys_flat))
+
+    def get_nb_classes(self):
+        return int(len(self.keys))
 
     def get_image_size(self):
         return self.image_size
@@ -282,6 +285,7 @@ class ImageReader:
                 except IndexError as e:
                     print(
                         'ImageReader Error: Number of classes specified differs from number of observed classes in data')
+                    self.outQ.put(None)
                     raise e
 
                 # add the batch in the output queue

@@ -27,7 +27,7 @@ import imagereader
 import time
 
 
-def train_model(output_folder, batch_size, reader_count, train_lmdb_filepath, test_lmdb_filepath, use_augmentation, number_classes, balance_classes, learning_rate, test_every_n_steps, early_stopping_count):
+def train_model(output_folder, tensorboard_folder, batch_size, reader_count, train_lmdb_filepath, test_lmdb_filepath, use_augmentation, number_classes, balance_classes, learning_rate, test_every_n_steps, early_stopping_count):
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
@@ -68,7 +68,7 @@ def train_model(output_folder, batch_size, reader_count, train_lmdb_filepath, te
             test_dataset = mirrored_strategy.experimental_distribute_dataset(test_dataset)
 
             print('Creating model')
-            renset = model.ResNet50(number_classes, global_batch_size, train_reader.get_image_size(), learning_rate)
+            renset = model.ResNet50(train_reader.get_nb_classes(), global_batch_size, train_reader.get_image_size(), learning_rate)
 
             checkpoint = tf.train.Checkpoint(optimizer=renset.get_optimizer(), model=renset.get_keras_model())
 
@@ -85,10 +85,12 @@ def train_model(output_folder, batch_size, reader_count, train_lmdb_filepath, te
             test_acc_metric = tf.keras.metrics.CategoricalAccuracy('test_accuracy')
 
             current_time = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
-            train_log_dir = os.path.join(output_folder, 'tensorboard-' + current_time, 'train')
+            train_log_dir = os.path.join(tensorboard_folder, 'train') if tensorboard_folder \
+                else os.path.join(output_folder, 'tensorboard-' + current_time, 'train')
             if not os.path.exists(train_log_dir):
                 os.makedirs(train_log_dir)
-            test_log_dir = os.path.join(output_folder, 'tensorboard-' + current_time, 'test')
+            test_log_dir = os.path.join(tensorboard_folder, 'test') if tensorboard_folder \
+                else os.path.join(output_folder, 'tensorboard-' + current_time, 'test')
             if not os.path.exists(test_log_dir):
                 os.makedirs(test_log_dir)
 
@@ -182,10 +184,10 @@ def train_model(output_folder, batch_size, reader_count, train_lmdb_filepath, te
     # convert training checkpoint to the saved model format
     if training_checkpoint_filepath is not None:
         # restore the checkpoint and generate a saved model
-        renset = model.ResNet50(number_classes, global_batch_size, train_reader.get_image_size(), learning_rate)
+        renset = model.ResNet50(train_reader.get_nb_classes(), global_batch_size, train_reader.get_image_size(), learning_rate)
         checkpoint = tf.train.Checkpoint(optimizer=renset.get_optimizer(), model=renset.get_keras_model())
         checkpoint.restore(training_checkpoint_filepath)
-        tf.saved_model.save(renset.get_keras_model(), os.path.join(output_folder, 'saved_model'))
+        tf.saved_model.save(renset.get_keras_model(), output_folder)
 
 
 if __name__ == "__main__":
@@ -195,6 +197,7 @@ if __name__ == "__main__":
     parser.add_argument('--train_database', dest='train_database_filepath', type=str, help='lmdb database to use for (Required)', required=True)
     parser.add_argument('--test_database', dest='test_database_filepath', type=str, help='lmdb database to use for testing (Required)', required=True)
     parser.add_argument('--output_dir', dest='output_folder', type=str, help='Folder where outputs will be saved (Required)', required=True)
+    parser.add_argument('--tensorboard_folder', dest='tensorboard_folder', type=str, help='Folder where tensorboard logs will be saved')
 
     parser.add_argument('--batch_size', dest='batch_size', type=int, help='training batch size', default=4)
     parser.add_argument('--number_classes', dest='number_classes', type=int, default=2)
@@ -209,6 +212,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     batch_size = args.batch_size
     output_folder = args.output_folder
+    tensorboard_folder = args.tensorboard_folder
     number_classes = args.number_classes
     early_stopping_count = args.early_stopping_count
     train_lmdb_filepath = args.train_database_filepath
@@ -230,9 +234,10 @@ if __name__ == "__main__":
     print('train_database = {}'.format(train_lmdb_filepath))
     print('test_database = {}'.format(test_lmdb_filepath))
     print('output folder = {}'.format(output_folder))
+    print('tensorboard folder = {}'.format(tensorboard_folder))
 
     print('early_stopping count = {}'.format(early_stopping_count))
     print('reader_count = {}'.format(reader_count))
 
-    train_model(output_folder, batch_size, reader_count, train_lmdb_filepath, test_lmdb_filepath, use_augmentation, number_classes, balance_classes, learning_rate, test_every_n_steps, early_stopping_count)
+    train_model(output_folder, tensorboard_folder, batch_size, reader_count, train_lmdb_filepath, test_lmdb_filepath, use_augmentation, number_classes, balance_classes, learning_rate, test_every_n_steps, early_stopping_count)
 
